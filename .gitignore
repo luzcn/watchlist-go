@@ -13,5 +13,5 @@
 
 .envrc
 
-.vendor/
+vendor/
 .idea

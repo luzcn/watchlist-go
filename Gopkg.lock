@@ -29,14 +29,6 @@
   version = "v1.7.3"
 
 [[projects]]
-  branch = "master"
-  digest = "1:824df88d39aa22cecaba9bbcd77850ef4d813ae2301f85e4f056e2fce820f526"
-  name = "github.com/heroku/skynet"
-  packages = ["web"]
-  pruneopts = "UT"
-  revision = "b8b4517ba9d2c8d91893aa74834a018f0e43edc8"
-
-[[projects]]
   digest = "1:a0216296da5c3191358b114fa8d2490477f5dff7380541551495b4f2a16989b3"
   name = "github.com/jinzhu/gorm"
   packages = [
@@ -81,7 +73,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/gorilla/mux",
-    "github.com/heroku/skynet/web",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "gopkg.in/alecthomas/kingpin.v2",
