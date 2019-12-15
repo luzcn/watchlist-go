@@ -30,7 +30,20 @@ func createNotes(env *db.Env) http.HandlerFunc {
 	})
 }
 
+// curl -X GET http://localhost:5000/notes
+func listNotes(env *db.Env) http.HandlerFunc {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		// notes := env.ListNotes()
+		var notes []db.Notes
+		env.ListNotes(&notes)
+
+		b, _ := json.Marshal(notes)
+		_, _ = fmt.Fprintf(res, string(b))
+	})
+}
+
 func Load(router *mux.Router, env *db.Env) {
 	router.HandleFunc("/health", health).Methods("GET")
 	router.HandleFunc("/notes", createNotes(env)).Methods("POST")
+	router.HandleFunc("/notes", listNotes(env)).Methods("GET")
 }

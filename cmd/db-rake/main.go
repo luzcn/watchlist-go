@@ -6,6 +6,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/luzcn/watchlist-go/src/db"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"log"
 	"os"
 )
 
@@ -37,7 +38,7 @@ func drop() {
 	fmt.Println("[+] Deleted ...")
 }
 
-func main() {
+func connectDB() (err error) {
 	dbName := "watchlist-dev"
 	conStr := os.Getenv("DATABASE_URL") + "/" + dbName + "?sslmode=disable"
 
@@ -46,14 +47,24 @@ func main() {
 		conStr = os.Getenv("DATABASE_URL") + "/" + dbName
 	}
 
-	// start a db connection
-	var err error
 	env.DB, err = gorm.Open("postgres", conStr)
-	defer env.DB.Close()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	env.DB.LogMode(true)
+	log.Printf("Connected to database %s\n", conStr)
+	return nil
+}
+
+func main() {
+
+	// start a db connection
+	if err := connectDB(); err != nil {
+		panic(fmt.Sprintf("Unable to connect to database: %s", err))
+	}
+	defer env.DB.Close()
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case migrateCmd.FullCommand():

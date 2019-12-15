@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -12,16 +13,16 @@ import (
 	"time"
 )
 
-var env db.Env
+var env = db.Env{}
 
-func main() {
-
-	PORT := os.Getenv("PORT")
-	if len(PORT) == 0 {
-		PORT = "5000"
+func init() {
+	if err := connectDB(&env); err != nil {
+		panic(fmt.Sprintf("Unable to connect to database: %s", err))
 	}
+}
 
-	// connect to db
+// connect to db
+func connectDB(env *db.Env) (err error) {
 	dbName := "watchlist-dev"
 	conStr := os.Getenv("DATABASE_URL") + "/" + dbName + "?sslmode=disable"
 
@@ -31,12 +32,15 @@ func main() {
 	}
 
 	// start a db connection
-	var err error
 	env.DB, err = gorm.Open("postgres", conStr)
+	return
+}
+func main() {
 	defer env.DB.Close()
 
-	if err != nil {
-		panic(err)
+	PORT := os.Getenv("PORT")
+	if len(PORT) == 0 {
+		PORT = "5000"
 	}
 
 	// register web handler
