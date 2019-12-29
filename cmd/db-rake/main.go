@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/joho/godotenv"
 	"github.com/luzcn/watchlist-go/src/db"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"log"
@@ -28,37 +29,45 @@ func migrate() {
 	fmt.Println("[*] Running DB migration...")
 
 	// migrate the schemas
-	env.DB.AutoMigrate(&db.Notes{})
+	env.DB.AutoMigrate(&db.Note{}, &db.Product{})
+
+	// add the foreign key
+	env.DB.Model(&db.Note{}).AddForeignKey("product_id", "products(id)", "RESTRICT", "RESTRICT")
+
 	fmt.Println("[+] Migration complete")
 }
 
 func drop() {
 	fmt.Println("[*] Deleting DB ...")
-	env.DB.DropTable(&db.Notes{})
+	env.DB.DropTable(&db.Note{})
 	fmt.Println("[+] Deleted ...")
 }
 
-func connectDB() (err error) {
-	dbName := "watchlist-dev"
-	conStr := os.Getenv("DATABASE_URL") + "/" + dbName + "?sslmode=disable"
+func connectDB() error {
 
+	var conStr string
 	if os.Getenv("APP_ENV") == "production" {
-		dbName = "watchlist"
-		conStr = os.Getenv("DATABASE_URL") + "/" + dbName
+		conStr = os.Getenv("DATABASE_URL") + "/watchlist"
+	} else {
+		conStr = os.Getenv("DATABASE_URL") + "/watchlist-dev?sslmode=disable"
 	}
 
-	env.DB, err = gorm.Open("postgres", conStr)
+	dbCon, err := gorm.Open("postgres", conStr)
 
 	if err != nil {
 		return err
 	}
 
-	env.DB.LogMode(true)
+	dbCon.LogMode(true)
+	env = db.Env{DB: dbCon}
+
 	log.Printf("Connected to database %s\n", conStr)
 	return nil
 }
 
 func main() {
+	// load environment variables
+	_ = godotenv.Load()
 
 	// start a db connection
 	if err := connectDB(); err != nil {

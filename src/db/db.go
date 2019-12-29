@@ -3,28 +3,32 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"log"
 )
 
 type Env struct {
 	DB *gorm.DB
 }
 
-func (env *Env) AddNote(note *Notes) {
-	env.DB.Create(note)
+type DataAccess interface {
+	CreateProduct(*Product)
+	GetProduct() Product
+}
+
+// We can use NewRecord or Create to insert new row in DB
+// NewRecord return true/false
+// Create can return error message
+func (env *Env) CreateProduct(p *Product) {
+	if err := env.DB.Create(p).Error; err != nil {
+		panic(err)
+	}
 }
 
 // get the first db record
-func (env *Env) GetNote(note *Notes) {
-	if err := env.DB.Take(note).Error; err != nil {
-		log.Println(err)
-	}
-}
+func (env *Env) GetProduct() Product {
+	p := Product{}
+	env.DB.Take(&p)
 
-func (env *Env) ListNotes(notes *[]Notes) {
+	env.DB.Model(p).Related(&p.Notes)
 
-	if err := env.DB.Find(&notes).Error; err != nil {
-		log.Println(err)
-	}
-
+	return p
 }
